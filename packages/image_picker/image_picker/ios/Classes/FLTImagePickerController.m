@@ -17,6 +17,9 @@
   self = [super init];
   if (self) {
     self.plugin = plugin;
+    if (@available(iOS 13.0, *)) {
+      self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+    }
     self.modalPresentationStyle = UIModalPresentationPopover;
     self.delegate = plugin;
   }
