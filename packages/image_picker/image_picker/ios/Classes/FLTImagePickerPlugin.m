@@ -13,7 +13,7 @@
 #import "FLTImagePickerMetaDataUtil.h"
 #import "FLTImagePickerPhotoAssetUtil.h"
 
-@interface FLTImagePickerPlugin () <UINavigationControllerDelegate, UIImagePickerControllerDelegate>
+@interface FLTImagePickerPlugin () <UINavigationControllerDelegate, UIAdaptivePresentationControllerDelegate, UIImagePickerControllerDelegate>
 
 @property(copy, nonatomic) FlutterResult result;
 
@@ -142,6 +142,7 @@ static const int SOURCE_GALLERY = 1;
       [UIImagePickerController isCameraDeviceAvailable:_device]) {
     _imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
     _imagePickerController.cameraDevice = _device;
+    _imagePickerController.presentationController.delegate = self;
     [[self viewControllerWithWindow:nil] presentViewController:_imagePickerController
                                                       animated:YES
                                                     completion:nil];
@@ -249,6 +250,7 @@ static const int SOURCE_GALLERY = 1;
 - (void)showPhotoLibrary {
   // No need to check if SourceType is available. It always is.
   _imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+  _imagePickerController.presentationController.delegate = self;
   [[self viewControllerWithWindow:nil] presentViewController:_imagePickerController
                                                     animated:YES
                                                   completion:nil];
@@ -336,12 +338,20 @@ static const int SOURCE_GALLERY = 1;
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
   [_imagePickerController dismissViewControllerAnimated:YES completion:nil];
+  [self imagePickerControllerDone];
+}
+
+- (void)imagePickerControllerDone {
   if (!self.result) {
     return;
   }
   self.result(nil);
   self.result = nil;
   _arguments = nil;
+}
+
+- (void)presentationControllerWillDismiss:(UIPresentationController *)presentationController {
+    [self imagePickerControllerDone];
 }
 
 - (void)saveImageWithOriginalImageData:(NSData *)originalImageData
