@@ -9,11 +9,12 @@
 #import <Photos/Photos.h>
 #import <UIKit/UIKit.h>
 
+#import "FLTImagePickerController.h"
 #import "FLTImagePickerImageUtil.h"
 #import "FLTImagePickerMetaDataUtil.h"
 #import "FLTImagePickerPhotoAssetUtil.h"
 
-@interface FLTImagePickerPlugin () <UINavigationControllerDelegate, UIImagePickerControllerDelegate>
+@interface FLTImagePickerPlugin ()
 
 @property(copy, nonatomic) FlutterResult result;
 
@@ -24,7 +25,7 @@ static const int SOURCE_GALLERY = 1;
 
 @implementation FLTImagePickerPlugin {
   NSDictionary *_arguments;
-  UIImagePickerController *_imagePickerController;
+  FLTImagePickerController *_imagePickerController;
   UIImagePickerControllerCameraDevice _device;
 }
 
@@ -64,12 +65,12 @@ static const int SOURCE_GALLERY = 1;
                                     message:@"Cancelled by a second request"
                                     details:nil]);
     self.result = nil;
+    return;
   }
 
+  _imagePickerController = [[FLTImagePickerController alloc] initWithPlugin:self];
+
   if ([@"pickImage" isEqualToString:call.method]) {
-    _imagePickerController = [[UIImagePickerController alloc] init];
-    _imagePickerController.modalPresentationStyle = UIModalPresentationCurrentContext;
-    _imagePickerController.delegate = self;
     _imagePickerController.mediaTypes = @[ (NSString *)kUTTypeImage ];
 
     self.result = result;
@@ -95,9 +96,6 @@ static const int SOURCE_GALLERY = 1;
         break;
     }
   } else if ([@"pickVideo" isEqualToString:call.method]) {
-    _imagePickerController = [[UIImagePickerController alloc] init];
-    _imagePickerController.modalPresentationStyle = UIModalPresentationCurrentContext;
-    _imagePickerController.delegate = self;
     _imagePickerController.mediaTypes = @[
       (NSString *)kUTTypeMovie, (NSString *)kUTTypeAVIMovie, (NSString *)kUTTypeVideo,
       (NSString *)kUTTypeMPEG4
@@ -142,9 +140,7 @@ static const int SOURCE_GALLERY = 1;
       [UIImagePickerController isCameraDeviceAvailable:_device]) {
     _imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
     _imagePickerController.cameraDevice = _device;
-    [[self viewControllerWithWindow:nil] presentViewController:_imagePickerController
-                                                      animated:YES
-                                                    completion:nil];
+    [self PresentImagePickerController];
   } else {
     [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Error", nil)
                                 message:NSLocalizedString(@"Camera not available.", nil)
@@ -249,6 +245,10 @@ static const int SOURCE_GALLERY = 1;
 - (void)showPhotoLibrary {
   // No need to check if SourceType is available. It always is.
   _imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+  [self PresentImagePickerController];
+}
+
+- (void)PresentImagePickerController {
   [[self viewControllerWithWindow:nil] presentViewController:_imagePickerController
                                                     animated:YES
                                                   completion:nil];
@@ -335,13 +335,19 @@ static const int SOURCE_GALLERY = 1;
 }
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
-  [_imagePickerController dismissViewControllerAnimated:YES completion:nil];
+  [self handleImagePickerControllerDismissed];
+}
+
+- (void)handleImagePickerControllerDismissed {
   if (!self.result) {
     return;
   }
   self.result(nil);
   self.result = nil;
   _arguments = nil;
+  // Dismiss image picker after cleaning up can precent race a condition,
+  // where the result is not cleaned before the next image picker is brought up.
+  [_imagePickerController dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)saveImageWithOriginalImageData:(NSData *)originalImageData
