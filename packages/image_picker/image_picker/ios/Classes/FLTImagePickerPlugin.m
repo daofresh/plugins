@@ -77,7 +77,7 @@ static const int SOURCE_GALLERY = 1;
     _arguments = call.arguments;
 
     int imageSource = [[_arguments objectForKey:@"source"] intValue];
-    BOOL usePhaAsset = [[_arguments objectForKey:@"iosPhaAsset"] boolValue];
+    BOOL usePhaAsset = [[_arguments objectForKey:@"forceFullMetaData"] boolValue];
 
     switch (imageSource) {
       case SOURCE_CAMERA: {
@@ -111,7 +111,7 @@ static const int SOURCE_GALLERY = 1;
     _arguments = call.arguments;
 
     int imageSource = [[_arguments objectForKey:@"source"] intValue];
-    BOOL usePhaAsset = [[_arguments objectForKey:@"iosPhaAsset"] boolValue];
+    BOOL usePhaAsset = [[_arguments objectForKey:@"forceFullMetaData"] boolValue];
     if ([[_arguments objectForKey:@"maxDuration"] isKindOfClass:[NSNumber class]]) {
       NSTimeInterval max = [[_arguments objectForKey:@"maxDuration"] doubleValue];
       _imagePickerController.videoMaximumDuration = max;
@@ -307,7 +307,7 @@ static const int SOURCE_GALLERY = 1;
     NSNumber *maxWidth = [_arguments objectForKey:@"maxWidth"];
     NSNumber *maxHeight = [_arguments objectForKey:@"maxHeight"];
     NSNumber *imageQuality = [_arguments objectForKey:@"imageQuality"];
-    BOOL usePhaAsset = [[_arguments objectForKey:@"iosPhaAsset"] boolValue];
+    BOOL usePhaAsset = [[_arguments objectForKey:@"forceFullMetaData"] boolValue];
 
     if (![imageQuality isKindOfClass:[NSNumber class]]) {
       imageQuality = @1;
