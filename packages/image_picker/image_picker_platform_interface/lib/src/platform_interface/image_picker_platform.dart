@@ -58,7 +58,10 @@ abstract class ImagePickerPlatform extends PlatformInterface {
   /// image types such as JPEG. If compression is not supported for the image that is picked,
   /// an warning message will be logged.
   ///
-  /// Set `iosPhaAsset` to `false` to disable `PHAAsset` and related permissions requirements on iOS.
+  /// `forceFullMetaData` defaults to `true`, so the plugin tries to get the full image metadata which may require
+  /// extra permission requests on certain platforms.
+  /// If `forceFullMetaData` is set to `false`, the plugin fetches the image in a way that reduces permission requests
+  /// from the platform (e.g on iOS the plugin won’t ask for the `NSPhotoLibraryUsageDescription` permission).
   ///
   /// Use `preferredCameraDevice` to specify the camera to use when the `source` is [ImageSource.camera].
   /// The `preferredCameraDevice` is ignored when `source` is [ImageSource.gallery]. It is also ignored if the chosen camera is not supported on the device.
@@ -75,7 +78,7 @@ abstract class ImagePickerPlatform extends PlatformInterface {
     double? maxWidth,
     double? maxHeight,
     int? imageQuality,
-    bool iosPhaAsset = true,
+    bool forceFullMetaData = true,
     CameraDevice preferredCameraDevice = CameraDevice.rear,
   }) {
     throw UnimplementedError('pickImage() has not been implemented.');
