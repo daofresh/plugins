@@ -1,3 +1,10 @@
+## 0.7.0+?
+
+* iOS
+  - Change presentation style to |UIModalPresentationPopover| to prevent an iOS 14 crash.
+  - Do not bring up the image picker if the second request is too early.
+  - Setup XCUITests.
+
 ## 0.7.0-nullsafety
 * Migrate to nullsafety
 * Breaking Changes:
